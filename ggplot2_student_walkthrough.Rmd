@@ -12,6 +12,7 @@ More things we can do to get more information on R and what we're doing:
 ```{bash}
 help()
 ```
+library("tidyverse")
 
 We'll need a few more packages for our exploration usage, too. We can install them all at once by using the `c()` function, which creates a list. We'll open these packages with the `library()` function later.
 
@@ -22,72 +23,163 @@ install.packages(c("nycflights13", "gapminder", "Lahman"))
 Built in to our tidyverse are several data sets that we can play around with. In the below code block, we create a variable `myplot` and save the `mpg` database to it.
 
 ```{r}
+myplot <- mpg
+myplot
 
 ```
 
 **Something you should be aware of and have open (perhaps on a second monitor, or you can print them out) is the ggplot2 cheat sheet!** <https://github.com/rstudio/cheatsheets/blob/main/data-visualization-2.1.pdf>
 
 ```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+  
+```
+
+```{r}
+mtcars
+```
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x=displ, y = hwy, color = class))
+```
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x=displ, y = hwy, color = displ < 5))
 
 ```
 
 ```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x=displ, y = hwy, color = rgb(0.7,1,0.3))) +
+  facet_wrap(~class, nrow = 2)
+
 
 ```
 
 ```{r}
-
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x=displ, y = hwy, color = drv))+
+  facet_grid(drv ~ .)
 ```
 
 ```{r}
+#Use gg.plot cheat sheet
+ggplot(data = mpg) + 
+  geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv))  +
+  geom_point(mapping = aes(x= displ, y = hwy, color = drv))
 
+ggplot(data = mpg, mapping = aes(x = displ, y= hwy, linetype = drv))+geom_point(mapping = aes(color = class))+
+  geom_smooth(se = FALSE)
 ```
 
 ```{r}
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut))
 
 ```
 
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-Whoa, where'd count come from? **Count is not a variable or attribute of the variable diamonds!** Count comes automatically with a lot of graphs as an attribute. You can verify what I'm saying with `?diamonds` in the console.
+Whoa, where'd count come from? **Count is not a variable or attribute of the variable diamonds!** Count comes automatically with a lot of graphs as an attribute. You can verify what I'm saying with `?diamonds` in the console. It shows up due to nature of discrete data sets
 
 Any attribute of a data set that is algorithmically calculated is called a *stat*, which is short for a statistical transformation. Many of the **geom** functions have stats built in, and many stats display geoms. For example, the above code block used a geom, but this one uses a stat, and results in an identical chart:
 
 ```{r}
-
+ggplot(data = diamonds) +
+  stat_count(mapping = aes(x = cut))
 ```
 
 Let's add color here!
 
 ```{r}
-
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut, fill = cut))
+  
 ```
 
 What if we add to a different variable than cut?
 
 ```{r}
+pie = ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity),
+           position = "fill"
+           ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
 
+pie + coord_polar()
 ```
 
 **For your consideration...** Is the above a good graph?
 
 ```{r}
-alt- becomes <- (option- on mac)
+#alt- becomes <- (option- on mac)
+
+pie = ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity),
+           position = "dodge"
+           ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+pie + coord_polar()
 ```
 
 ## Homework
 
 ```{r}
 # Find a builtin data set for students to explore; use their cheat sheet from stats to label continuous and discrete data; Analyze that data set, create graphs, find a hypothesis
+library(ggplot2)
+library(nycflights13)
+#View(nycflights13::flights)
+#View(Lahman::Batting)
+#View(gapminder::gapminder)
+#Generate 3 graphs to solve this homework 
 
+#ggplot(data = nycflights13::flights) +
+# geom_point(mapping = aes(x = dep_delay, y = sched_dep_time))
+
+
+#Filter the data to exclude departure delays below 60
+filtered_data <- flights %>%
+  filter(dep_delay >= 60)
+
+#ggplot(data = filtered_data, aes(x = dep_delay)) +
+# geom_point(mapping = aes(x = dep_delay, y = sched_dep_time))
+
+
+# Create a count plot (bar chart) of departure delays to show the frequency of long delays are less common
+ggplot(data = filtered_data, aes(x = dep_delay)) +
+  geom_bar() +
+  coord_cartesian(xlim = c(60, 1000))
+
+#Displaying a graph of frequency of sched_dep_time to show the most common usage of flights is in the morning,
+#Noticing from the graph there is not a second hump of travel implying it does not follow rush our rules
+#of having multiple busy times
+ggplot(data = flights, aes(x = sched_dep_time)) +
+  geom_bar() +
+  labs(x = "Scheduled Time", y = "Count") +  # Customize axis labels
+  ggtitle("Count of Flights by Scheduled Time") 
+
+#ggplot(data = gapminder::gapminder) +
+# geom_point(mapping = aes(x = lifeExp, y = gdpPercap))+
+#   geom_smooth()
+
+#Only using the most recent year of data to display life Expectancy relation to GDP
+filtered_data <- gapminder::gapminder %>%
+  filter(year == 2007)
+
+ggplot(data = filtered_data, aes(x = lifeExp, y = gdpPercap)) +
+  geom_point() +  # Add points
+  geom_smooth(aes(group = 1))
+
+#Only using the oldest data to show there is a significant change in the curve of relationship implying advances made in the modern era
+filtered_data <- gapminder::gapminder %>%
+  filter(year == 1952)
+
+ggplot(data = filtered_data, aes(x = lifeExp, y = gdpPercap)) +
+  geom_point() +  # Add points
+  geom_smooth(aes(group = 1))
 ```
+
