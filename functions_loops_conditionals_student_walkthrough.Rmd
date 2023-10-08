@@ -356,4 +356,15 @@ position <- function(alphabet){
 
     ```{r}
     # You may feel more comfortable figuring this out in Python first, then translating into R later.
+    marioStairs <- function(int=3){
+      rx <-int
+      count <- 0
+      for (i in 1:rx) {
+        count <- count + 1
+          for (j in 1:count) {
+            cat("x", sep = "")
+            }
+      cat("\n")
+      }
+    }
     ```
